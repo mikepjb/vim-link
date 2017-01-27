@@ -98,7 +98,9 @@ class Connection:
     while len(select.select([f], [], [], 0.1)[0]) == 0:
       self.poll()
     try:
-      return bdecode(f)
+      message = bdecode(f)
+      print(message)
+      return message
     finally:
       f.close()
 

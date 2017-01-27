@@ -1,60 +1,58 @@
 " POC that provides asynchronous cpp functionality from vim-fireplace
+" XXX check for python 2 on command line!!!
 
-function! fireplace#session_eval(expr, ...) abort
-  let response = s:eval(a:expr, a:0 ? a:1 : {})
+" XXX this requires one less :h than vim-fireplace, why?
+let s:python_dir = fnamemodify(expand("<sfile>"), ':p:h:h') . '/python'
 
-  if !empty(get(response, 'value', '')) || !empty(get(response, 'err', ''))
-    call insert(s:history, {'buffer': bufnr(''), 'code': a:expr, 'ns': fireplace#ns(), 'response': response})
-  endif
-  if len(s:history) > &history
-    call remove(s:history, &history, -1)
-  endif
-
-  if !empty(get(response, 'stacktrace', []))
-    let nr = 0
-    if has_key(s:qffiles, expand('%:p'))
-      let nr = winbufnr(s:qffiles[expand('%:p')].buffer)
-    endif
-    if nr != -1
-      call setloclist(nr, fireplace#quickfix_for(response.stacktrace))
-    endif
-  endif
-
-  try
-    silent doautocmd User FireplaceEvalPost
-  catch
-    echohl ErrorMSG
-    echomsg v:exception
-    echohl NONE
-  endtry
-
-  call s:output_response(response)
-
-  if get(response, 'ex', '') !=# ''
-    let err = 'Clojure: '.response.ex
-  elseif has_key(response, 'value')
-    return response.value
+function! s:shellesc(arg) abort
+  if a:arg =~ '^[A-Za-z0-9_/.-]\+$'
+    return a:arg
+  elseif &shell =~# 'cmd'
+    throw 'Python interface not working. See :help python-dynamic'
   else
-    let err = 'fireplace.vim: Something went wrong: '.string(response)
+    let escaped = shellescape(a:arg)
+    if &shell =~# 'sh' && &shell !~# 'csh'
+      return substitute(escaped, '\\\n', '\n', 'g')
+    else
+      return escaped
+    endif
   endif
-  throw err
 endfunction
 
-function! fireplace#echo_session_eval(expr, ...) abort
-  try
-    echo fireplace#session_eval(a:expr, a:0 ? a:1 : {})
-  catch /^Clojure:/
-  catch
-    echohl ErrorMSG
-    echomsg v:exception
-    echohl NONE
-  endtry
-  return ''
+function! s:escape_quotes(arg) abort
+  " XXX check if quotes are in the string before substituting
+  return substitute(a:arg, '\"', '\\\"', 'g')
 endfunction
 
-function! s:print_last() abort
-  call fireplace#echo_session_eval(s:todo, {'file_path': s:buffer_path()})
-  return ''
+" This callback will be executed when the entire command is completed
+function! link#background_command_close(channel)
+  " Read the output from the command into the quickfix window
+  execute "cfile! " . g:background_command_output
+  " Open the quickfix window
+  copen
+  unlet g:background_command_output
 endfunction
 
+function! link#run_background_command(code)
+  " Make sure we're running VIM version 8 or higher.
+  if v:version < 800
+    echoerr 'run_background_command requires VIM version 8 or higher'
+    return
+  endif
 
+  if exists('g:background_command_output')
+    echo 'Already running task in background'
+  else
+    echo 'Running task in background'
+    " Launch the job.
+    " Notice that we're only capturing out, and not err here. This is because, for some reason, the callback
+    " will not actually get hit if we write err out to the same file. Not sure if I'm doing this wrong or?
+    let g:background_command_output = tempname()
+    let command = 'python'
+          \ . ' ' . s:shellesc(s:python_dir.'/nrepl_client.py')
+          \ . ' ' . s:escape_quotes(s:shellesc(a:code)) . ''
+    " XXX debug
+    echo command
+    call job_start(command, {'close_cb': 'link#background_command_close', 'out_io': 'file', 'out_name': g:background_command_output})
+  endif
+endfunction

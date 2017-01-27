@@ -2,7 +2,6 @@ from bencode import encode, decode
 from uuid import uuid1
 import nrepl_transport
 import os
-import sys
 
 sends_in_progress = {}
 
@@ -56,15 +55,13 @@ def create_nrepl_eval_payload(code, session_id):
 terminators = ['done']
 selectors = {'id': 'test-id'}
 
-
-if __name__ == "__main__":
-  new_session_id = nrepl_transport.dispatch("127.0.0.1", 9999, noop, None, "call", payload_clone, terminators, selectors)[0]['new-session']
-  print(nrepl_transport.dispatch(
+new_session_id = nrepl_transport.dispatch("127.0.0.1", 9999, noop, None, "call", payload_clone, terminators, selectors)[0]['new-session']
+print(nrepl_transport.dispatch(
     "127.0.0.1",
     9999,
     noop,
     None,
     "call",
-    create_nrepl_eval_payload(sys.argv[1], new_session_id),
+    create_nrepl_eval_payload("(+ 50 50 50)", new_session_id),
     terminators,
     selectors))
