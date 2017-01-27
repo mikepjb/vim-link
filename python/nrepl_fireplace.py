@@ -65,7 +65,7 @@ def bdecode(f, char=None):
   elif char == '':
     raise EOFError("unexpected end of bencode data")
   else:
-    raise TypeError("unexpected type "+char+" in bencode data")
+    raise TypeError("unexpected type "+char+"in bencode data")
 
 
 class Connection:
@@ -88,7 +88,7 @@ class Connection:
 
   def send(self, payload):
     if sys.version_info[0] >= 3:
-      self.socket.sendall(bytes(str(payload), 'UTF-8'))
+      self.socket.sendall(bytes(payload, 'UTF-8'))
     else:
       self.socket.sendall(payload)
     return ''
@@ -121,23 +121,12 @@ def dispatch(host, port, poll, keepalive, command, *args):
   finally:
     conn.close()
 
-# XXX this command arg calls a command defined in the Connection class
 def main(host, port, keepalive, command, *args):
   try:
-    result = dispatch(host, port, noop, keepalive, command, *[bdecode(StringIO(arg)) for arg in args])
-    print(result)
-    sys.stdout.write(vim_encode(result))
-    # sys.stdout.write(vim_encode(dispatch(host, port, noop, keepalive, command, *[bdecode(StringIO(arg)) for arg in args])))
+    sys.stdout.write(vim_encode(dispatch(host, port, noop, keepalive, command, *[bdecode(StringIO(arg)) for arg in args])))
   except Exception:
     print((sys.exc_info()[1]))
     exit(1)
 
 if __name__ == "__main__":
-  # main(*sys.argv[1:])
-  main('127.0.0.1',
-          '9999',
-          './somefile',
-          'call',
-          "d4:file44:(in-ns 'watermarker.core) (def x 1) (+ 40 2)9:file-name8:core.clj9:file-path20:watermarker/core.clj2:id42:fireplace-mikepjb-mini.local-1485444645-102:op9:load-file7:session36:26779877-66e1-4693-95b2-6170337a543fe",
-          "l4:donee",
-          "l2:ide")
+  main(*sys.argv[1:])
