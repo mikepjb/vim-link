@@ -3,6 +3,7 @@ from uuid import uuid1
 import nrepl_transport
 import os
 import sys
+import argparse
 
 sends_in_progress = {}
 
@@ -50,14 +51,23 @@ payload_clone = encode({b'op': b'clone', b'id': b'test-id'}).decode("utf-8")
 payload_eval = encode({b'op': b'eval', b'code' : b'(def rt "hello")', b'session': b'b41be33e-9622-437f-8165-5d607839772c', b'id': b'test-id'}).decode("utf-8")
 
 def create_nrepl_eval_payload(code, session_id):
-  print(encode({b'op': b'eval', b'code' : code.encode('utf-8'), b'session': session_id.encode('utf-8'), b'id': b'test-id'}).decode("utf-8"))
-  return encode({b'op': b'eval', b'code' : code.encode('utf-8'), b'session': session_id.encode('utf-8'), b'id': b'test-id'}).decode("utf-8")
+  print(code)
+  print(encode({b'op': b'eval',
+    b'code' : code.encode('utf-8'),
+    b'session': session_id.encode('utf-8'),
+    b'id': b'test-id'}).decode("utf-8"))
+  return encode({b'op': b'eval',
+    b'code' : code.encode('utf-8'),
+    b'session': session_id.encode('utf-8'),
+    b'id': b'test-id'}).decode("utf-8")
 
 terminators = ['done']
 selectors = {'id': 'test-id'}
 
 
 if __name__ == "__main__":
+  command = ' '.join(sys.argv[1:])
+  unquoted_command = command[1:-1]
   new_session_id = nrepl_transport.dispatch("127.0.0.1", 9999, noop, None, "call", payload_clone, terminators, selectors)[0]['new-session']
   print(nrepl_transport.dispatch(
     "127.0.0.1",
@@ -65,6 +75,6 @@ if __name__ == "__main__":
     noop,
     None,
     "call",
-    create_nrepl_eval_payload(sys.argv[1], new_session_id),
+    create_nrepl_eval_payload(unquoted_command, new_session_id),
     terminators,
     selectors))

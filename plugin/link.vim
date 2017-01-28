@@ -33,6 +33,10 @@ function! link#background_command_close(channel)
   unlet g:background_command_output
 endfunction
 
+function! link#testargs(code)
+  echo s:shellesc('"' . a:code . '"')
+endfunction
+
 function! link#run_background_command(code)
   " Make sure we're running VIM version 8 or higher.
   if v:version < 800
@@ -50,8 +54,9 @@ function! link#run_background_command(code)
     let g:background_command_output = tempname()
     let command = 'python'
           \ . ' ' . s:shellesc(s:python_dir.'/nrepl_client.py')
-          \ . ' ' . s:escape_quotes(s:shellesc(a:code)) . ''
+          \ . ' ' . s:shellesc(a:code)
     " XXX debug
+          " \ . ' ' . s:shellesc(a:code)
     echo command
     call job_start(command, {'close_cb': 'link#background_command_close', 'out_io': 'file', 'out_name': g:background_command_output})
   endif
