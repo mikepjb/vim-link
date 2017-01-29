@@ -6,6 +6,59 @@ let ui#skip = 'synIDattr(synID(line("."),col("."),1),"name") =~? "comment\\|stri
 let ui#open = '[[{(]'
 let ui#close = '[]})]'
 
+if !exists('s:qffiles')
+  let s:qffiles = {}
+endif
+
+function! s:buf() abort
+  if exists('s:input')
+    return s:input
+  elseif has_key(s:qffiles, expand('%:p'))
+    return s:qffiles[expand('%:p')].buffer
+  else
+    return '%'
+  endif
+endfunction
+
+function! s:buffer_path(...) abort
+  let buffer = a:0 ? a:1 : s:buf()
+  if getbufvar(buffer, '&buftype') =~# '^no'
+    return ''
+  endif
+  let path = substitute(fnamemodify(bufname(buffer), ':p'), '\C^zipfile:\(.*\)::', '\1/', '')
+  for dir in ui#path(buffer)
+    if dir !=# '' && path[0 : strlen(dir)-1] ==# dir && path[strlen(dir)] =~# '[\/]'
+      return path[strlen(dir)+1:-1]
+    endif
+  endfor
+  return ''
+endfunction
+
+function! s:path_extract(path)
+  let path = []
+  if a:path =~# '\.jar'
+    for elem in split(substitute(a:path, ',$', '', ''), ',')
+      if elem ==# ''
+        let path += ['.']
+      else
+        let path += split(glob(substitute(elem, '\\\ze[\\ ,]', '', 'g'), 1), "\n")
+      endif
+    endfor
+  endif
+  return path
+endfunction
+
+function! ui#path(...) abort
+  let buf = a:0 ? a:1 : s:buf()
+  " for repl in s:repls
+  "   if s:includes_file(fnamemodify(bufname(buf), ':p'), repl.path())
+  "     return repl.path()
+  "   endif
+  " endfor
+  return s:path_extract(getbufvar(buf, '&path'))
+endfunction
+
+
 function! ui#eval_input_handler(line1, line2, count, args) abort
   let options = {}
   if a:args !=# '' " if :Eval <statement>
