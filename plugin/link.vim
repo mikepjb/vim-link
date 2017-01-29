@@ -31,6 +31,7 @@ endfunction
 
 function! link#background_command_close(channel)
   let output = readfile(g:background_command_output)
+  let g:previous_command_output = g:background_command_output
   for line in output
     let dline = s:dict(line)
     if has_key(dline, 'value')
@@ -71,6 +72,7 @@ endfunction
 " XXX include -complete function
 " XXX investigate the -bang flag, what does this mean?
 command! -buffer -range=0 -nargs=? Eval :call ui#eval_input_handler(<line1>, <line2>, <count>, <q-args>)
+command! Log :execute(":belowright 10split" .  g:previous_command_output)
 " command! -range Eval :call link#run_background_command(<count>)
 " vmap <CR>
 " nnoremap <silent> <Plug>Eval :exe <SID>print_last()<CR>
