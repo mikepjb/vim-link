@@ -1,0 +1,7 @@
+# Parengage modules test file
+
+Include: include/setup.vader
+
+~ Features
+Include (Eval command parsing): feature/eval.vader
+# Include (Balancing character pairs): feature/balance.vader

@@ -1,0 +1,9 @@
+Given(A direct argument being passed to Eval):
+  (def text-example (str/join ", " '(1 2) 3))
+
+Do(A direct argument being passed to Eval):
+  :Eval (defn new-thing [] "hello")
+
+Expect(A new function is defined):
+  #'something
+
