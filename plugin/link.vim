@@ -54,19 +54,15 @@ function! link#run_background_command(code)
     return
   endif
 
-  if exists('g:background_command_output')
-    echo 'Already running task in background'
-  else
-    echom 'Running task in background'
-    let g:background_command_output = tempname()
-    let command = 'python'
-          \ . ' ' . s:shellesc(s:python_dir.'/nrepl_client.py')
-          \ . ' ' . s:shellesc(a:code)
-    call job_start(command,
-          \ {'close_cb': 'link#background_command_close',
-          \ 'out_io': 'file',
-          \ 'out_name': g:background_command_output})
-  endif
+  echom 'Evaluating...'
+  let g:background_command_output = tempname()
+  let command = 'python'
+        \ . ' ' . s:shellesc(s:python_dir.'/nrepl_client.py')
+        \ . ' ' . s:shellesc(a:code)
+  call job_start(command,
+        \ {'close_cb': 'link#background_command_close',
+        \ 'out_io': 'file',
+        \ 'out_name': g:background_command_output})
 endfunction
 
 " command! -nargs=1 Eval :call link#run_background_command(<q-args>)
