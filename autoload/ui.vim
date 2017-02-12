@@ -58,7 +58,18 @@ function! ui#path(...) abort
   return s:path_extract(getbufvar(buf, '&path'))
 endfunction
 
+function! ui#namespace(code) abort
+  " XXX works for src + other folders e.g test + any def'd source dirs e.g dev
+  let namespace =  split(expand('%:p'), 'src')[-1]
+  let namespace = split(namespace, '/')
+  let namespace = join(namespace, '.')
+  let namespace = substitute(namespace, '.clj\(s\)\=', '', '')
+  let namespace = '(ns ' . namespace . ")\n\n"
+  return namespace . a:code
+endfunction
 
+" XXX pass ns if available at the top of the file
+" XXX :Require loads the current file
 function! ui#eval_input_handler(line1, line2, count, args) abort
   let options = {}
   if a:args !=# '' " if :Eval <statement>
@@ -98,5 +109,5 @@ function! ui#eval_input_handler(line1, line2, count, args) abort
             \ . getline(end_line)[0 : end_col-1]
     endif
   endif
-  call link#run_background_command(expr)
+  call link#run_background_command(ui#namespace(expr))
 endfunction
