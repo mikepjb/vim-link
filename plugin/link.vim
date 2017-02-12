@@ -38,7 +38,8 @@ function! link#background_command_close(channel)
       echo dline['value']
     endif
     if has_key(dline, 'out')
-      echo dline['out']
+      let g:link#output = dline['out']
+      echom dline['out']
     endif
   endfor
   unlet g:background_command_output
