@@ -73,6 +73,7 @@ function! link#setup_eval() abort
   command! -buffer -range=0 -nargs=? Eval :call ui#eval_input_handler(<line1>, <line2>, <count>, <q-args>)
   command! Log :execute(":belowright 10split" .  g:previous_command_output)
   command! Require :call ui#eval_input_handler(1, line('$'), 1, '')
+  command! RunTests :call link#run_background_command('(clojure.test/run-all-tests)')
   vmap <CR> :Eval<CR>
 endfunction
 
