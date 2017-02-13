@@ -39,7 +39,11 @@ function! link#background_command_close(channel)
     endif
     if has_key(dline, 'out')
       let g:link#output = dline['out']
-      echom dline['out']
+      if g:link#output =~ 'RuntimeException'
+        let g:link#output = split(g:link#output, "\\n")[0]
+        let g:link#output = substitute(g:link#output, "^.*.java.lang.", '', '')
+      end
+      echom g:link#output
     endif
   endfor
   unlet g:background_command_output
