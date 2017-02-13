@@ -60,10 +60,16 @@ endfunction
 
 function! ui#namespace(code) abort
   " XXX works for src + other folders e.g test + any def'd source dirs e.g dev
-  let namespace =  split(expand('%:p'), 'src')[-1]
+  let filename = expand('%:p')
+  if filename =~ 'src'
+    let namespace =  split(filename, 'src')[-1]
+  else
+    let namespace = split(filename, 'test')[-1]
+  endif
   let namespace = split(namespace, '/')
   let namespace = join(namespace, '.')
   let namespace = substitute(namespace, '.clj\(s\)\=', '', '')
+  let namespace = substitute(namespace, '_', '-', 'g')
   let namespace = '(ns ' . namespace . ")\n\n"
   return namespace . a:code
 endfunction
