@@ -69,14 +69,16 @@ function! link#run_background_command(code)
         \ 'out_name': g:background_command_output})
 endfunction
 
-" command! -nargs=1 Eval :call link#run_background_command(<q-args>)
-" XXX include -complete function
-" XXX investigate the -bang flag, what does this mean?
-command! -buffer -range=0 -nargs=? Eval :call ui#eval_input_handler(<line1>, <line2>, <count>, <q-args>)
-command! Log :execute(":belowright 10split" .  g:previous_command_output)
-vmap <CR> :Eval<CR>
-" command! -range Eval :call link#run_background_command(<count>)
-" vmap <CR>
-" nnoremap <silent> <Plug>Eval :exe <SID>print_last()<CR>
-" nnoremap <silent> <Plug>Eval :call link#run_background_command(<q-args>)
-" nnoremap <silent> <Plug>FireplacePrintLast :exe <SID>print_last()<CR>
+function! link#setup_eval() abort
+  " command! -nargs=1 Eval :call link#run_background_command(<q-args>)
+  " XXX include -complete function
+  " XXX investigate the -bang flag, what does this mean?
+  command! -buffer -range=0 -nargs=? Eval :call ui#eval_input_handler(<line1>, <line2>, <count>, <q-args>)
+  command! Log :execute(":belowright 10split" .  g:previous_command_output)
+  vmap <CR> :Eval<CR>
+endfunction
+
+augroup link_eval
+  autocmd!
+  autocmd FileType clojure call link#setup_eval()
+augroup END
