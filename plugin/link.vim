@@ -72,6 +72,7 @@ function! link#setup_eval() abort
   " XXX investigate the -bang flag, what does this mean?
   command! -buffer -range=0 -nargs=? Eval :call ui#eval_input_handler(<line1>, <line2>, <count>, <q-args>)
   command! Log :execute(":belowright 10split" .  g:previous_command_output)
+  command! Require :call ui#eval_input_handler(1, line('$'), 1, '')
   vmap <CR> :Eval<CR>
 endfunction
 
