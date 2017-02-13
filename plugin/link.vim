@@ -6,12 +6,9 @@ function! s:shellesc(arg) abort
   elseif &shell =~# 'cmd'
     throw 'Python interface not working. See :help python-dynamic'
   else
-    let escaped = shellescape(a:arg)
-    if &shell =~# 'sh' && &shell !~# 'csh'
-      return substitute(escaped, '\\\n', '\n', 'g')
-    else
-      return escaped
-    endif
+    let code_to_eval = a:arg
+    let g:code_to_eval = substitute(code_to_eval, "'", "\'", 'g')
+    return "'" . g:code_to_eval . "'"
   endif
 endfunction
 
