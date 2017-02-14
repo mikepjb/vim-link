@@ -2,6 +2,13 @@
 
 cd $(dirname $BASH_SOURCE)
 
+python nrepl/nrepl_tests.py
+
+if [ $? -eq 1 ]; then
+    echo 'python tests failed'
+    exit
+fi
+
 vim -Nu <(cat << EOF
 syntax on
 for dep in ['vader.vim', 'vim-repeat']

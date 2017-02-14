@@ -1,4 +1,4 @@
-let s:python_dir = fnamemodify(expand("<sfile>"), ':p:h:h') . '/python'
+let s:python_dir = fnamemodify(expand("<sfile>"), ':p:h:h') . '/nrepl'
 
 function! s:shellesc(arg) abort
   if a:arg =~ '^[A-Za-z0-9_/.-]\+$'
